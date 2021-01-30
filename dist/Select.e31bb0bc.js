@@ -136,11 +136,19 @@ function _classPrivateMethodGet(receiver, privateSet, fn) { if (!privateSet.has(
 var getTemplate = function getTemplate() {
   var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
   var placeholder = arguments.length > 1 ? arguments[1] : undefined;
+  var selectedId = arguments.length > 2 ? arguments[2] : undefined;
   var text = placeholder !== null && placeholder !== void 0 ? placeholder : 'Placeholder dafault';
   var items = data.map(function (item) {
-    return "\n      <li class=\"select__item\" data-type=\"item\" data-id=\"".concat(item.id, "\">").concat(item.value, "</li>\n    ");
+    var cls = '';
+
+    if (item.id === selectedId) {
+      text = item.value;
+      cls = 'selected';
+    }
+
+    return "\n      <li class=\"select__item ".concat(cls, "\" data-type=\"item\" data-id=\"").concat(item.id, "\">").concat(item.value, "</li>\n    ");
   });
-  return "\n    <div class=\"select__input\" data-type=\"input\">\n      <span>".concat(text, "</span>\n      <i class=\"fas fa-caret-down\" data-type=\"arrow\"></i>\n    </div>\n    <div class=\"select__dropdown\">\n      <ul class=\"select__list\">\n        ").concat(items.join(''), "\n      </ul>\n    </div>\n  ");
+  return "\n    <div class=\"select__backdrop\" data-type=\"backdrop\"></div>\n    <div class=\"select__input\" data-type=\"input\">\n      <span data-type=\"value\">".concat(text, "</span>\n      <i class=\"fas fa-caret-down\" data-type=\"arrow\"></i>\n    </div>\n    <div class=\"select__dropdown\">\n      <ul class=\"select__list\">\n        ").concat(items.join(''), "\n      </ul>\n    </div>\n  ");
 };
 
 var _render = new WeakSet();
@@ -157,6 +165,7 @@ var Select = /*#__PURE__*/function () {
 
     this.$el = document.querySelector(selector);
     this.options = options;
+    this.selectedId = options.selectedId;
 
     _classPrivateMethodGet(this, _render, _render2).call(this);
 
@@ -172,8 +181,22 @@ var Select = /*#__PURE__*/function () {
         this.toggle();
       } else if (type === 'item') {
         var id = event.target.dataset.id;
-        console.log('id', id);
+        this.select(id);
+      } else if (type === 'backdrop') {
+        this.close();
       }
+    }
+  }, {
+    key: "select",
+    value: function select(id) {
+      this.selectedId = id;
+      this.$value.textContent = this.current.value;
+      this.$el.querySelectorAll("[data-type=\"item\"]").forEach(function (el) {
+        el.classList.remove('selected');
+      });
+      this.$el.querySelector("[data-id=\"".concat(id, "\"]")).classList.add('selected');
+      this.options.onSelect ? this.options.onSelect(this.current) : null;
+      this.close();
     }
   }, {
     key: "toggle",
@@ -198,11 +221,21 @@ var Select = /*#__PURE__*/function () {
     key: "destroy",
     value: function destroy() {
       this.$el.removeEventListener('click', this.clickHandler);
+      this.$el.innerHTML = '';
     }
   }, {
     key: "isOpen",
     get: function get() {
       return this.$el.classList.contains('open');
+    }
+  }, {
+    key: "current",
+    get: function get() {
+      var _this = this;
+
+      return this.options.data.find(function (item) {
+        return item.id === _this.selectedId;
+      });
     }
   }]);
 
@@ -216,13 +249,14 @@ var _render2 = function _render2() {
       placeholder = _this$options.placeholder,
       data = _this$options.data;
   this.$el.classList.add('select');
-  this.$el.innerHTML = getTemplate(data, placeholder);
+  this.$el.innerHTML = getTemplate(data, placeholder, this.selectedId);
 };
 
 var _setup2 = function _setup2() {
   this.clickHandler = this.clickHandler.bind(this);
   this.$el.addEventListener('click', this.clickHandler);
   this.$arrow = this.$el.querySelector('[data-type="arrow"]');
+  this.$value = this.$el.querySelector('[data-type="value"]');
 };
 },{}],"../../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
@@ -305,6 +339,7 @@ require("./select/styles.scss");
 
 var select = new _select.Select('#select', {
   placeholder: 'Select an element',
+  // selectedId:'7',
   data: [{
     id: '1',
     value: 'jQuery'
@@ -335,7 +370,10 @@ var select = new _select.Select('#select', {
   }, {
     id: '10',
     value: 'Nest'
-  }]
+  }],
+  onSelect: function onSelect(item) {
+    console.log('Selected Item', item);
+  }
 });
 window.s = select;
 },{"./select/select":"select/select.js","./select/styles.scss":"select/styles.scss"}],"../../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -366,7 +404,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52289" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60313" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
